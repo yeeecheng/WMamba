@@ -14,5 +14,5 @@ nnUNetv2_plan_and_preprocess -d 4
 train
 ```bash
 nnUNetv2_train {} 3d_fullres all -tr {}
-nnUNetv2_train 4 3d_fullres all -tr nnUNetTrainerUMambaBotT
+nnUNetv2_train 4 3d_fullres all -tr nnUNetTrainerWMambaBot
 ```

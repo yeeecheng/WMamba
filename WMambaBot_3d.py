@@ -20,6 +20,8 @@ from dynamic_network_architectures.building_blocks.helper import maybe_convert_s
 from torch.cuda.amp import autocast
 from dynamic_network_architectures.building_blocks.residual import BasicBlockD
 
+import ptwt, pywt
+
 class UpsampleLayer(nn.Module):
     def __init__(
             self,
@@ -39,7 +41,34 @@ class UpsampleLayer(nn.Module):
         x = self.conv(x)
         return x
 
-class MambaLayer(nn.Module):
+class WaveletLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(917, 512),
+            nn.LeakyReLU(),
+            nn.Linear(512, 256),
+        )
+        self.wavelet_type = pywt.Wavelet("sym4")
+        self.adaptive_pool = nn.AdaptiveAvgPool3d((5,7,5))
+
+    @autocast(enabled=False)
+    def forward(self, x):
+        ori_shape = x.shape
+        x_w = ptwt.conv_transform_3.wavedec3(x, self.wavelet_type, axes=(-4,-3,-2), level=7)[-1]
+        for idx, e in enumerate(x_w.values()):
+            if idx == 0:
+                x_w_c = e
+            else:
+                x_w_c = torch.cat((x_w_c, e) , 1)
+    
+        out = torch.swapaxes(x_w_c, 1,4)
+        out = self.fc(out)
+        out = torch.swapaxes(out, 1,4)
+        out =  self.adaptive_pool(out)
+        return out
+
+class WMambaLayer(nn.Module):
     def __init__(self, dim, d_state = 16, d_conv = 4, expand = 2):
         super().__init__()
         self.dim = dim
@@ -50,6 +79,9 @@ class MambaLayer(nn.Module):
                 d_conv=d_conv,    # Local convolution width
                 expand=expand,    # Block expansion factor
         )
+        self.wavelet = WaveletLayer()
+    
+    
     
     @autocast(enabled=False)
     def forward(self, x):
@@ -59,11 +91,14 @@ class MambaLayer(nn.Module):
         assert C == self.dim
         n_tokens = x.shape[2:].numel()
         img_dims = x.shape[2:]
-        x_flat = x.reshape(B, C, n_tokens).transpose(-1, -2)
+        #####
+        x_t = self.wavelet(x)
+        #####
+        x_flat = x_t.reshape(B, C, n_tokens).transpose(-1, -2)
         x_norm = self.norm(x_flat)
         x_mamba = self.mamba(x_norm)
         out = x_mamba.transpose(-1, -2).reshape(B, C, *img_dims)
-
+        
         return out
 
 
@@ -371,7 +406,7 @@ class UNetResDecoder(nn.Module):
                 output += np.prod([self.num_classes, *skip_sizes[-(s+1)]], dtype=np.int64)
         return output
     
-class UMambaBotT(nn.Module):
+class WMambaBot(nn.Module):
     def __init__(self,
                  input_channels: int,
                  n_stages: int,
@@ -430,7 +465,7 @@ class UMambaBotT(nn.Module):
             stem_channels=stem_channels
         )
 
-        self.mamba_layer = MambaLayer(dim = features_per_stage[-1])
+        self.mamba_layer = WMambaLayer(dim = features_per_stage[-1])
 
         self.decoder = UNetResDecoder(self.encoder, num_classes, n_conv_per_stage_decoder, deep_supervision)
 
@@ -446,7 +481,7 @@ class UMambaBotT(nn.Module):
         return self.encoder.compute_conv_feature_map_size(input_size) + self.decoder.compute_conv_feature_map_size(input_size)
 
 
-def get_umamba_botT_3d_from_plans(
+def get_wmamba_bot_3d_from_plans(
         plans_manager: PlansManager,
         dataset_json: dict,
         configuration_manager: ConfigurationManager,
@@ -460,10 +495,10 @@ def get_umamba_botT_3d_from_plans(
 
     label_manager = plans_manager.get_label_manager(dataset_json)
 
-    segmentation_network_class_name = 'UMambaBotT'
-    network_class = UMambaBotT
+    segmentation_network_class_name = 'WMambaBot'
+    network_class = WMambaBot
     kwargs = {
-        'UMambaBot': {
+        'WMambaBot': {
             'conv_bias': True,
             'norm_op': get_matching_instancenorm(conv_op),
             'norm_op_kwargs': {'eps': 1e-5, 'affine': True},
@@ -476,7 +511,7 @@ def get_umamba_botT_3d_from_plans(
         'n_conv_per_stage': configuration_manager.n_conv_per_stage_encoder,
         'n_conv_per_stage_decoder': configuration_manager.n_conv_per_stage_decoder
     }
-
+    
     model = network_class(
         input_channels=num_input_channels,
         n_stages=num_stages,
