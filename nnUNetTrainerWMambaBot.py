@@ -13,7 +13,7 @@ class nnUNetTrainerWMambaBot(nnUNetTrainer):
     def __init__(self, plans: dict, configuration: str, fold: int, dataset_json: dict, unpack_dataset: bool = True,
         device: torch.device = torch.device('cuda')):
         super().__init__(plans, configuration, fold, dataset_json, unpack_dataset, device)
-        self.num_epochs = os.environ.get('training_epochs')
+        self.num_epochs = int(os.environ.get('training_epochs'))
         if self.num_epochs == None:
             raise ValueError("Epochs environ variable not define")
         print("Total Epochs ", self.num_epochs)
