@@ -45,12 +45,12 @@ class WaveletLayer(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc = nn.Sequential(
-            nn.Linear(917, 512),
+            nn.Linear(1141, 512),
             nn.LeakyReLU(),
             nn.Linear(512, 256),
         )
         self.wavelet_type = pywt.Wavelet("sym4")
-        self.adaptive_pool = nn.AdaptiveAvgPool3d((5,7,5))
+        #self.adaptive_pool = nn.AdaptiveAvgPool3d((5,7,5))
 
     @autocast(enabled=False)
     def forward(self, x):
@@ -65,7 +65,7 @@ class WaveletLayer(nn.Module):
         out = torch.swapaxes(x_w_c, 1,4)
         out = self.fc(out)
         out = torch.swapaxes(out, 1,4)
-        out =  self.adaptive_pool(out)
+        #out =  self.adaptive_pool(out)
         return out
 
 class WMambaLayer(nn.Module):
