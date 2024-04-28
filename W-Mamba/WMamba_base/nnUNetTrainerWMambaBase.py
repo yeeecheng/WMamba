@@ -13,10 +13,14 @@ class nnUNetTrainerWMambaBase(nnUNetTrainer):
         device: torch.device = torch.device('cuda')):
         super().__init__(plans, configuration, fold, dataset_json, unpack_dataset, device)
         if os.environ.get('training_epochs') == None:
-            raise ValueError("Epochs environ variable not define")
+            raise ValueError("Epochs environment variable not define")
+        
+        if os.environ.get('checkpoint_save_every') != None:
+            self.save_every = int(os.environ.get('checkpoint_save_every'))
         
         self.num_epochs = int(os.environ.get('training_epochs'))
         print("Total Epochs ", self.num_epochs)
+        print("Checkpoint Save Every ", self.save_every)
     
     def run_training(self):
         self.on_train_start()
