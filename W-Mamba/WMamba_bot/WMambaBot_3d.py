@@ -19,8 +19,8 @@ from mamba_ssm import Mamba
 from dynamic_network_architectures.building_blocks.helper import maybe_convert_scalar_to_list, get_matching_pool_op
 from torch.cuda.amp import autocast
 from dynamic_network_architectures.building_blocks.residual import BasicBlockD
-
-import ptwt, pywt
+from nnunetv2.waveletLayer import WaveletLayer
+import pywt
 
 class UpsampleLayer(nn.Module):
     def __init__(
@@ -41,32 +41,6 @@ class UpsampleLayer(nn.Module):
         x = self.conv(x)
         return x
 
-class WaveletLayer(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.fc = nn.Sequential(
-            nn.Linear(917, 512),
-            nn.LeakyReLU(),
-            nn.Linear(512, 256),
-        )
-        self.wavelet_type = pywt.Wavelet("sym4")
-        self.adaptive_pool = nn.AdaptiveAvgPool3d((5,7,5))
-
-    @autocast(enabled=False)
-    def forward(self, x):
-        ori_shape = x.shape
-        x_w = ptwt.conv_transform_3.wavedec3(x, self.wavelet_type, axes=(-4,-3,-2), level=7)[-1]
-        for idx, e in enumerate(x_w.values()):
-            if idx == 0:
-                x_w_c = e
-            else:
-                x_w_c = torch.cat((x_w_c, e) , 1)
-    
-        out = torch.swapaxes(x_w_c, 1,4)
-        out = self.fc(out)
-        out = torch.swapaxes(out, 1,4)
-        out =  self.adaptive_pool(out)
-        return out
 
 class WMambaLayer(nn.Module):
     def __init__(self, dim, d_state = 16, d_conv = 4, expand = 2):
@@ -79,7 +53,7 @@ class WMambaLayer(nn.Module):
                 d_conv=d_conv,    # Local convolution width
                 expand=expand,    # Block expansion factor
         )
-        self.wavelet = WaveletLayer()
+        self.wavelet = WaveletLayer((dim,5,6,5), pywt.Wavelet("sym4"), wavelet_level=1)
     
     
     
