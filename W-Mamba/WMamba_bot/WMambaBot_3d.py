@@ -53,7 +53,23 @@ class WMambaLayer(nn.Module):
                 d_conv=d_conv,    # Local convolution width
                 expand=expand,    # Block expansion factor
         )
-        self.wavelet = WaveletLayer((dim,5,6,5), pywt.Wavelet("sym4"), wavelet_level=1)
+        self.wavelet_layer = WaveletLayer((dim, 5, 7, 5), pywt.Wavelet("sym4"), wavelet_level=1)
+        self.reconstruction_layer = nn.Sequential(
+                nn.Conv3d(
+                    in_channels = dim,
+                    out_channels= 2*dim,
+                    kernel_size= (3,3,3),
+                    padding = "same",
+                ),
+                nn.LeakyReLU(),
+                nn.Conv3d(
+                    in_channels = 2*dim,
+                    out_channels= dim,
+                    kernel_size= (3,3,3),
+                    padding = "same",
+                ),
+                nn.LeakyReLU(),
+        )
     
     
     
@@ -65,13 +81,15 @@ class WMambaLayer(nn.Module):
         assert C == self.dim
         n_tokens = x.shape[2:].numel()
         img_dims = x.shape[2:]
-        #####
-        x_t = self.wavelet(x)
-        #####
+        ##### 
+        x_t = self.wavelet_layer(x)
         x_flat = x_t.reshape(B, C, n_tokens).transpose(-1, -2)
         x_norm = self.norm(x_flat)
         x_mamba = self.mamba(x_norm)
         out = x_mamba.transpose(-1, -2).reshape(B, C, *img_dims)
+        #####
+        out = self.reconstruction_layer(out)
+        out = out + x
         
         return out
 

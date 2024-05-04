@@ -17,8 +17,6 @@ class WaveletLayer(nn.Module):
         
         
         super().__init__()
-        
-        self.reconstruction_layer = None
 
         self.wavelet_type = wevelet_type
 
@@ -30,22 +28,27 @@ class WaveletLayer(nn.Module):
 
         self.conv_in_axix = conv_in_axix
         self.extract_in_level_layer = [
-                                nn.Conv3d(
-                                    in_channels = input_shape[conv_in_axix]*7,
-                                    out_channels= input_shape[conv_in_axix],
-                                    kernel_size= (3,3,3),
-                                    padding = "same",
-                                    device="cuda"
+                                nn.Sequential(
+                                    nn.Conv3d(
+                                        in_channels = input_shape[conv_in_axix]*7,
+                                        out_channels= input_shape[conv_in_axix],
+                                        kernel_size= (3,3,3),
+                                        padding = "same",
+                                    ),
+                                    nn.LeakyReLU()
                                 ) for i in range(self.wavelet_level)
                             ]
         self.extract_in_level_layer = nn.ModuleList(self.extract_in_level_layer)
-        self.extract_all_level_layer = nn.Conv3d(
-                                    in_channels = input_shape[conv_in_axix] * (self.wavelet_level+1),
-                                    out_channels= input_shape[conv_in_axix],
-                                    padding= "same",
-                                    kernel_size= (3,3,3)
-                                )
-
+        self.extract_all_level_layer = nn.Sequential(
+                                        nn.Conv3d(
+                                            in_channels = input_shape[conv_in_axix] * (self.wavelet_level+1),
+                                            out_channels= input_shape[conv_in_axix],
+                                            padding= "same",
+                                            kernel_size= (3,3,3)
+                                        ),
+                                        nn.LeakyReLU()
+                                    )
+                                
     @autocast(enabled=False)
     def forward(self, x):
         # B,A,B,X,C => B,X,A,B,C
@@ -58,7 +61,9 @@ class WaveletLayer(nn.Module):
         max_shape = x_wavelet[-1]['aad'].shape[-3:]
         # upsample largest level 'aaa' 
         # B,X,A',B',C' => B,X,MA,MB,MC
-        x_wavelet_result = torch.nn.Upsample(max_shape)(x_wavelet[0])
+        in_layer_upsample = torch.nn.Upsample(max_shape)
+        x_wavelet_result = in_layer_upsample(x_wavelet[0])
+        
         # iterate all level, except largest one
         for i , wavelet in enumerate(x_wavelet):
             if i == 0 : continue
@@ -66,7 +71,7 @@ class WaveletLayer(nn.Module):
             # concat and upsample the all feq in one level
             for k, v in wavelet.items():
                 # B,X,A',B',C' => B,X,MA,MB,MC
-                v = torch.nn.Upsample(max_shape)(v)
+                v = in_layer_upsample(v)
                 tmp_x = torch.cat((tmp_x, v) , -4)  if tmp_x != None else v
             
             # extract the feature in one level
@@ -84,9 +89,9 @@ class WaveletLayer(nn.Module):
         out = out.transpose(self.conv_in_axix, -4)
         return out
 
-# if __name__ == "__main__":
-#     a = WaveletLayer((15, 40, 56, 40), pywt.Wavelet("sym4"), conv_in_axix=-2).to("cuda")
-#     x = torch.randn(3, 15, 40, 56, 40).to("cuda")
-#     # print(x.shape[1,2])
-#     print(a(x).shape)
+if __name__ == "__main__":
+    a = WaveletLayer((15, 40, 56, 40), pywt.Wavelet("sym4"), conv_in_axix=-2).to("cuda")
+    x = torch.randn(3, 15, 40, 56, 40).to("cuda")
+    # print(x.shape[1,2])
+    print(a(x).shape)
 
