@@ -3,7 +3,7 @@ from nnunetv2.utilities.plans_handling.plans_handler import ConfigurationManager
 from torch import nn
 import torch
 import os
-from tqdm import tqdm
+from tqdm.notebook import tqdm as tqdm
 
 
 
