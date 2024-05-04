@@ -12,7 +12,7 @@ class WaveletLayer(nn.Module):
                  input_shape : list,  # C,H,W,D
                  wevelet_type : pywt._extensions._pywt.Wavelet, 
                  wavelet_level : int = None,
-                 conv_in_axix : int = -4 # C
+                 conv_in_axes : int = -4 # C
                  ):
         
         
@@ -21,17 +21,17 @@ class WaveletLayer(nn.Module):
         self.wavelet_type = wevelet_type
 
         wavelet_input_shape = list(input_shape)
-        wavelet_input_shape[-4], wavelet_input_shape[conv_in_axix] = wavelet_input_shape[conv_in_axix], wavelet_input_shape[-4]
+        wavelet_input_shape[-4], wavelet_input_shape[conv_in_axes] = wavelet_input_shape[conv_in_axes], wavelet_input_shape[-4]
         self.wavelet_level = wavelet_level if wavelet_level != None else pywt.dwtn_max_level(wavelet_input_shape, wevelet_type)
 
         assert self.wavelet_level != 0
 
-        self.conv_in_axix = conv_in_axix
+        self.conv_in_axix = conv_in_axes
         self.extract_in_level_layer = [
                                 nn.Sequential(
                                     nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axix]*7,
-                                        out_channels= input_shape[conv_in_axix],
+                                        in_channels = input_shape[conv_in_axes]*7,
+                                        out_channels= input_shape[conv_in_axes],
                                         kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
@@ -41,8 +41,8 @@ class WaveletLayer(nn.Module):
         self.extract_in_level_layer = nn.ModuleList(self.extract_in_level_layer)
         self.extract_all_level_layer = nn.Sequential(
                                         nn.Conv3d(
-                                            in_channels = input_shape[conv_in_axix] * (self.wavelet_level+1),
-                                            out_channels= input_shape[conv_in_axix],
+                                            in_channels = input_shape[conv_in_axes] * (self.wavelet_level+1),
+                                            out_channels= input_shape[conv_in_axes],
                                             padding= "same",
                                             kernel_size= (3,3,3)
                                         ),
@@ -90,7 +90,7 @@ class WaveletLayer(nn.Module):
         return out
 
 if __name__ == "__main__":
-    a = WaveletLayer((15, 40, 56, 40), pywt.Wavelet("sym4"), conv_in_axix=-2).to("cuda")
+    a = WaveletLayer((15, 40, 56, 40), pywt.Wavelet("sym4"), conv_in_axes=-2).to("cuda")
     x = torch.randn(3, 15, 40, 56, 40).to("cuda")
     # print(x.shape[1,2])
     print(a(x).shape)
