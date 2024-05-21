@@ -53,7 +53,7 @@ class WMambaLayer(nn.Module):
                 d_conv=d_conv,    # Local convolution width
                 expand=expand,    # Block expansion factor
         )
-        self.wavelet_layer = WaveletLayer((dim, 5, 7, 5), pywt.Wavelet("sym4"), wavelet_level=1)
+        self.wavelet_layer = WaveletLayer((dim, 5, 7, 5), pywt.Wavelet("sym4"))
         self.reconstruction_layer = nn.Sequential(
                 nn.Conv3d(
                     in_channels = dim,

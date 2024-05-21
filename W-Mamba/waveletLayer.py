@@ -6,6 +6,8 @@ from torch.nn import functional as F
 from typing import Union, Type, List, Tuple
 import ptwt, pywt
 from torch.cuda.amp import autocast
+import warnings
+
 
 class WaveletLayer(nn.Module):
     def __init__(self, 
@@ -24,7 +26,9 @@ class WaveletLayer(nn.Module):
         wavelet_input_shape[-4], wavelet_input_shape[conv_in_axes] = wavelet_input_shape[conv_in_axes], wavelet_input_shape[-4]
         self.wavelet_level = wavelet_level if wavelet_level != None else pywt.dwtn_max_level(wavelet_input_shape, wevelet_type)
 
-        assert self.wavelet_level != 0
+        if self.wavelet_level == 0:
+            warnings.warn("The wavelet_level is zero, auto set one to avoid error")
+            self.wavelet_level = 1
 
         self.conv_in_axix = conv_in_axes
         self.extract_in_level_layer = [
