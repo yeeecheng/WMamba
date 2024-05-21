@@ -3,7 +3,11 @@ from nnunetv2.utilities.plans_handling.plans_handler import ConfigurationManager
 from torch import nn
 import torch
 import os
-from tqdm.notebook import tqdm as tqdm
+
+if os.environ.get("ipynb") == None:
+    from tqdm import tqdm
+else:
+    from tqdm.notebook import tqdm as tqdm
 
 
 
