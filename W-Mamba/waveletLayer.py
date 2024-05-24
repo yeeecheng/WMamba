@@ -33,50 +33,40 @@ class WaveletLayer(nn.Module):
         self.conv_in_axix = conv_in_axes
         self.extract_in_level_layer = [
                                 nn.Sequential(
-                                    # block 1
                                     nn.Conv3d(
                                         in_channels = input_shape[conv_in_axes]*7,
-                                        out_channels= input_shape[conv_in_axes]*8,
+                                        out_channels= input_shape[conv_in_axes]*2,
                                         kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
                                     nn.LeakyReLU(),
                                     nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axes]*8,
-                                        out_channels= input_shape[conv_in_axes]*8,
-                                        kernel_size= (3,3,3),
-                                        padding = "same",
-                                    ),
-                                    nn.LeakyReLU(),
-                                    nn.MaxPool3d(
-                                        kernel_size =(2, 2, 2),
-                                        stride = (1, 1, 1),
-                                    ),
-                                    # block 2
-                                    nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axes]*8,
-                                        out_channels= input_shape[conv_in_axes]*4,
+                                        in_channels = input_shape[conv_in_axes]*2,
+                                        out_channels= input_shape[conv_in_axes]*2,
                                         kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
                                     nn.LeakyReLU(),
                                     nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axes]*4,
+                                        in_channels = input_shape[conv_in_axes]*2,
                                         out_channels= input_shape[conv_in_axes],
                                         kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
-                                    nn.LeakyReLU(),
-                                    nn.MaxPool3d(
-                                        kernel_size =(2, 2, 2),
-                                        stride = (1, 1, 1),
-                                    )
+                                    nn.LeakyReLU()
                                 ) for i in range(self.wavelet_level)
                             ]
         self.extract_in_level_layer = nn.ModuleList(self.extract_in_level_layer)
         self.extract_all_level_layer = nn.Sequential(
                                         nn.Conv3d(
                                             in_channels = input_shape[conv_in_axes] * (self.wavelet_level+1),
+                                            out_channels= 2*input_shape[conv_in_axes],
+                                            padding= "same",
+                                            kernel_size= (3,3,3)
+                                        ),
+                                        nn.LeakyReLU(),
+                                        nn.Conv3d(
+                                            in_channels = 2*input_shape[conv_in_axes],
                                             out_channels= input_shape[conv_in_axes],
                                             padding= "same",
                                             kernel_size= (3,3,3)
@@ -129,4 +119,3 @@ if __name__ == "__main__":
     x = torch.randn(3, 15, 40, 56, 40).to("cuda")
     # print(x.shape[1,2])
     print(a(x).shape)
-
