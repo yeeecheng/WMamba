@@ -35,20 +35,27 @@ class WaveletLayer(nn.Module):
                                 nn.Sequential(
                                     nn.Conv3d(
                                         in_channels = input_shape[conv_in_axes]*7,
-                                        out_channels= input_shape[conv_in_axes]*2,
+                                        out_channels= input_shape[conv_in_axes]*8,
                                         kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
                                     nn.LeakyReLU(),
                                     nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axes]*2,
-                                        out_channels= input_shape[conv_in_axes]*2,
+                                        in_channels = input_shape[conv_in_axes]*8,
+                                        out_channels= input_shape[conv_in_axes]*8,
                                         kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
                                     nn.LeakyReLU(),
                                     nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axes]*2,
+                                        in_channels = input_shape[conv_in_axes]*8,
+                                        out_channels= input_shape[conv_in_axes]*4,
+                                        kernel_size= (3,3,3),
+                                        padding = "same",
+                                    ),
+                                    nn.LeakyReLU(),
+                                    nn.Conv3d(
+                                        in_channels = input_shape[conv_in_axes]*4,
                                         out_channels= input_shape[conv_in_axes],
                                         kernel_size= (3,3,3),
                                         padding = "same",
