@@ -35,13 +35,13 @@ class WaveletLayer(nn.Module):
                                 nn.Sequential(
                                     nn.Conv3d(
                                         in_channels = input_shape[conv_in_axes]*7,
-                                        out_channels= input_shape[conv_in_axes]*4,
-                                        kernel_size= (5,5,5),
+                                        out_channels= input_shape[conv_in_axes]*2,
+                                        kernel_size= (3,3,3),
                                         padding = "same",
                                     ),
                                     nn.LeakyReLU(),
                                     nn.Conv3d(
-                                        in_channels = input_shape[conv_in_axes]*4,
+                                        in_channels = input_shape[conv_in_axes]*2,
                                         out_channels= input_shape[conv_in_axes],
                                         kernel_size= (3,3,3),
                                         padding = "same",
@@ -53,6 +53,13 @@ class WaveletLayer(nn.Module):
         self.extract_all_level_layer = nn.Sequential(
                                         nn.Conv3d(
                                             in_channels = input_shape[conv_in_axes] * (self.wavelet_level+1),
+                                            out_channels= 2*input_shape[conv_in_axes],
+                                            padding= "same",
+                                            kernel_size= (3,3,3)
+                                        ),
+                                        nn.LeakyReLU(),
+                                        nn.Conv3d(
+                                            in_channels = 2*input_shape[conv_in_axes],
                                             out_channels= input_shape[conv_in_axes],
                                             padding= "same",
                                             kernel_size= (3,3,3)
