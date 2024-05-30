@@ -136,9 +136,9 @@ class BasicResBlock(nn.Module):
         y = self.conv1(x)
         y = self.act1(self.norm1(y))  
         y = self.norm2(self.conv2(y))
-        if self.conv3:
-            x = self.conv3(x)
-        y += x
+        # if self.conv3:
+        #     x = self.conv3(x)
+        # y += x
         return self.act2(y)
     
 class UNetResEncoder(nn.Module):
