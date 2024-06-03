@@ -46,9 +46,9 @@ class WMambaLayer(nn.Module):
     def __init__(self, dim, d_state = 16, d_conv = 4, expand = 2):
         super().__init__()
         self.dim = dim
-        self.norm = nn.LayerNorm(dim)
+        self.norm = nn.LayerNorm(7 * dim)
         self.mamba = Mamba(
-                d_model=dim, # Model dimension d_model
+                d_model= 7 * dim, # Model dimension d_model
                 d_state=d_state,  # SSM state expansion factor
                 d_conv=d_conv,    # Local convolution width
                 expand=expand,    # Block expansion factor
