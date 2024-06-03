@@ -19,14 +19,6 @@ class WaveletLayer(nn.Module):
 
         self.wavelet_type = wavelet_type
 
-        wavelet_input_shape = list(input_shape)
-        wavelet_input_shape[-4], wavelet_input_shape[conv_in_axes] = wavelet_input_shape[conv_in_axes], wavelet_input_shape[-4]
-        self.wavelet_level = wavelet_level if wavelet_level != None else pywt.dwtn_max_level(wavelet_input_shape, wavelet_type)
-
-        if self.wavelet_level == 0:
-            warnings.warn("The wavelet_level is zero, auto set one to avoid error")
-            self.wavelet_level = 1
-
         self.key = list()
 
 
@@ -35,7 +27,7 @@ class WaveletLayer(nn.Module):
         # B, C, W, H, D
         # [tensor | dict]
         self.wavelet_input_shape = x.shape
-        x_wavelet = ptwt.wavedec3(x, self.wavelet_type, level= self.wavelet_level)
+        x_wavelet = ptwt.wavedec3(x, self.wavelet_type, level= 1)
 
         tmp_x = None
         for i, wavelet in enumerate(x_wavelet):
@@ -58,6 +50,7 @@ class WaveletLayer(nn.Module):
         # create dict
         x_dict = dict()
         for i, key in enumerate(self.key):
+            print(i, key)
             x_dict[key] =  batches[i + 1]
         reconstruction = ptwt.waverec3([self.wavelet_0, x_dict], self.wavelet_type)
 
