@@ -34,6 +34,7 @@ class WaveletLayer(nn.Module):
     def forward(self, x):
         # B, C, W, H, D
         # [tensor | dict]
+        self.wavelet_input_shape = x.shape
         x_wavelet = ptwt.wavedec3(x, self.wavelet_type, level= self.wavelet_level)
 
         tmp_x = None
@@ -58,6 +59,10 @@ class WaveletLayer(nn.Module):
         for i, key in enumerate(self.key):
             x_dict[key] =  batches[i + 1]
         reconstruction = ptwt.waverec3([self.wavelet_0, x_dict], self.wavelet_type)
+
+        # check padding 
+        reconstruction = reconstruction[tuple(slice(s) for s in self.wavelet_input_shape.shape)]
+
         return reconstruction
 
 if __name__ == "__main__":
