@@ -21,7 +21,7 @@ class WaveletLayer(nn.Module):
 
         wavelet_input_shape = list(input_shape)
         wavelet_input_shape[-4], wavelet_input_shape[conv_in_axes] = wavelet_input_shape[conv_in_axes], wavelet_input_shape[-4]
-        self.wavelet_level = wavelet_level if wavelet_level != None else pywt.dwtn_max_level(wavelet_input_shape, wevelet_type)
+        self.wavelet_level = wavelet_level if wavelet_level != None else pywt.dwtn_max_level(wavelet_input_shape, wavelet_type)
 
         if self.wavelet_level == 0:
             warnings.warn("The wavelet_level is zero, auto set one to avoid error")
