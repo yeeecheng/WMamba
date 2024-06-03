@@ -68,10 +68,10 @@ class WMambaLayer(nn.Module):
         n_tokens = x_t.shape[2:].numel()
         img_dims = x_t.shape[2:]
         ##### 
-        x_flat = x_t.reshape(B, self.dim, n_tokens).transpose(-1, -2)
+        x_flat = x_t.reshape(B, 7 * self.dim, n_tokens).transpose(-1, -2)
         x_norm = self.norm(x_flat)
         x_mamba = self.mamba(x_norm)
-        out = x_mamba.transpose(-1, -2).reshape(B, self.dim, *img_dims)
+        out = x_mamba.transpose(-1, -2).reshape(B, 7 * self.dim, *img_dims)
         #####
         
         out = WaveletLayer.inverse(out)
