@@ -75,7 +75,7 @@ class WMambaLayer(nn.Module):
         #####
         
         out = self.wavelet_layer.inverse(out)
-
+        print(out.shape)
         return out
 
 
@@ -352,6 +352,10 @@ class UNetResDecoder(nn.Module):
         seg_outputs = []
         for s in range(len(self.stages)):
             x = self.upsample_layers[s](lres_input)
+            print("x")
+            print(x.shape)
+            print("skips[-(s+2)]")
+            print(skips[-(s+2)].shape)
             x = torch.cat((x, skips[-(s+2)]), 1)
             x = self.stages[s](x)
             if self.deep_supervision:
@@ -449,7 +453,10 @@ class WMambaBot(nn.Module):
 
     def forward(self, x):
         skips = self.encoder(x)
+        print("skips")
+        print(skips[-1].shape)
         skips[-1] = self.mamba_layer(skips[-1])
+        print(skips[-1].shape)
         return self.decoder(skips)
 
     def compute_conv_feature_map_size(self, input_size):
