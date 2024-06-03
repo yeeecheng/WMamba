@@ -61,7 +61,7 @@ class WaveletLayer(nn.Module):
         reconstruction = ptwt.waverec3([self.wavelet_0, x_dict], self.wavelet_type)
 
         # check padding 
-        reconstruction = reconstruction[tuple(slice(s) for s in self.wavelet_input_shape.shape)]
+        reconstruction = reconstruction[tuple(slice(s) for s in self.wavelet_input_shape)]
 
         return reconstruction
 
