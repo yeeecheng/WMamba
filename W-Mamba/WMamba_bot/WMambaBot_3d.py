@@ -161,7 +161,7 @@ class UNetResEncoder(nn.Module):
 
         self.conv_pad_sizes = []
         for krnl in kernel_sizes:
-            self.conv_pad_sizes.append(1)
+            self.conv_pad_sizes.append([i // 2 for i in krnl])
 
 
         stem_channels = features_per_stage[0]
