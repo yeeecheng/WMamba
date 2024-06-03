@@ -51,8 +51,9 @@ class WaveletLayer(nn.Module):
 
     def inverse(self, x):
         # B, 8C, W, H, D -> B, C, W, H, D
-        batches = torch.chunk(x, 8, dim= 1)
-        
+        print(x.shape)
+        batches = torch.chunk(x, 8, -4)
+        print(len(batches))
         self.wavelet_0 = batches[0]
         # create dict
         x_dict = dict()
