@@ -19,7 +19,7 @@ class WaveletLayer(nn.Module):
 
         self.wavelet_type = wavelet_type
 
-        self.key = list()
+        self.key = ["aad", "ada", "add", "daa", "dad", "dda", "ddd"]
 
 
     @autocast(enabled= False)
@@ -35,7 +35,6 @@ class WaveletLayer(nn.Module):
                 tmp_x = wavelet 
                 continue
             for k, v in wavelet.items():
-                self.key.append(k)
                 tmp_x = torch.cat((tmp_x, v), -4) if tmp_x != None else v
         # B, 8C, W, H, D
         return tmp_x
@@ -43,14 +42,12 @@ class WaveletLayer(nn.Module):
 
     def inverse(self, x):
         # B, 8C, W, H, D -> B, C, W, H, D
-        print(x.shape)
         batches = torch.chunk(x, 8, -4)
-        print(len(batches))
+        
         self.wavelet_0 = batches[0]
         # create dict
         x_dict = dict()
         for i, key in enumerate(self.key):
-            print(i, key)
             x_dict[key] =  batches[i + 1]
         reconstruction = ptwt.waverec3([self.wavelet_0, x_dict], self.wavelet_type)
 
