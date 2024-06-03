@@ -75,7 +75,6 @@ class WMambaLayer(nn.Module):
         #####
         
         out = self.wavelet_layer.inverse(out)
-        print(out.shape)
         return out
 
 
