@@ -39,23 +39,24 @@ class WaveletLayer(nn.Module):
         tmp_x = None
         for i, wavelet in enumerate(x_wavelet):
             if i == 0: 
-                self.wavelet_0 = wavelet 
+                tmp_x = wavelet 
                 continue
             for k, v in wavelet.items():
                 self.key.append(k)
                 tmp_x = torch.cat((tmp_x, v), -4) if tmp_x != None else v
-        # B, 7C, W, H, D
+        # B, 8C, W, H, D
         return tmp_x
 
 
     def inverse(self, x):
-        # B, 7C, W, H, D -> B, C, W, H, D
-        batches = torch.chunk(x, 7, dim= 1)
-
+        # B, 8C, W, H, D -> B, C, W, H, D
+        batches = torch.chunk(x, 8, dim= 1)
+        
+        self.wavelet_0 = batches[0]
         # create dict
         x_dict = dict()
         for i, key in enumerate(self.key):
-            x_dict[key] =  batches[i]
+            x_dict[key] =  batches[i + 1]
         reconstruction = ptwt.waverec3([self.wavelet_0, x_dict], self.wavelet_type)
         return reconstruction
 

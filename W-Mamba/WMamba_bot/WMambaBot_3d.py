@@ -46,9 +46,9 @@ class WMambaLayer(nn.Module):
     def __init__(self, dim, d_state = 16, d_conv = 4, expand = 2):
         super().__init__()
         self.dim = dim
-        self.norm = nn.LayerNorm(7 * dim)
+        self.norm = nn.LayerNorm(8 * dim)
         self.mamba = Mamba(
-                d_model= 7 * dim, # Model dimension d_model
+                d_model= 8 * dim, # Model dimension d_model
                 d_state=d_state,  # SSM state expansion factor
                 d_conv=d_conv,    # Local convolution width
                 expand=expand,    # Block expansion factor
@@ -68,10 +68,10 @@ class WMambaLayer(nn.Module):
         n_tokens = x_t.shape[2:].numel()
         img_dims = x_t.shape[2:]
         ##### 
-        x_flat = x_t.reshape(B, 7 * self.dim, n_tokens).transpose(-1, -2)
+        x_flat = x_t.reshape(B, 8 * self.dim, n_tokens).transpose(-1, -2)
         x_norm = self.norm(x_flat)
         x_mamba = self.mamba(x_norm)
-        out = x_mamba.transpose(-1, -2).reshape(B, 7 * self.dim, *img_dims)
+        out = x_mamba.transpose(-1, -2).reshape(B, 8 * self.dim, *img_dims)
         #####
         
         out = self.wavelet_layer.inverse(out)
