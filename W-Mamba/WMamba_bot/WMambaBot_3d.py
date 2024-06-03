@@ -74,7 +74,7 @@ class WMambaLayer(nn.Module):
         out = x_mamba.transpose(-1, -2).reshape(B, 7 * self.dim, *img_dims)
         #####
         
-        out = WaveletLayer.inverse(out)
+        out = self.wavelet_layer.inverse(out)
 
         return out
 
