@@ -54,29 +54,6 @@ class WMambaLayer(nn.Module):
                 expand=expand,    # Block expansion factor
         )
         self.wavelet_layer = WaveletLayer((dim, 5, 7, 5), pywt.Wavelet("sym4"))
-        self.reconstruction_layer = nn.Sequential(
-                nn.Conv3d(
-                    in_channels = dim,
-                    out_channels= 2*dim,
-                    kernel_size= (3,3,3),
-                    padding = "same",
-                ),
-                nn.LeakyReLU(),
-                nn.Conv3d(
-                    in_channels = 2*dim,
-                    out_channels= 2*dim,
-                    kernel_size= (3,3,3),
-                    padding = "same",
-                ),
-                nn.LeakyReLU(),
-                nn.Conv3d(
-                    in_channels = 2*dim,
-                    out_channels= dim,
-                    kernel_size= (3,3,3),
-                    padding = "same",
-                ),
-                nn.LeakyReLU(),
-        )
     
     
     
@@ -84,20 +61,22 @@ class WMambaLayer(nn.Module):
     def forward(self, x):
         if x.dtype == torch.float16:
             x = x.type(torch.float32)
-        B, C = x.shape[:2]
-        assert C == self.dim
-        n_tokens = x.shape[2:].numel()
-        img_dims = x.shape[2:]
-        ##### 
+
         x_t = self.wavelet_layer(x)
+        
+        B, C = x_t.shape[:2]
+        assert C == self.dim
+        n_tokens = x_t.shape[2:].numel()
+        img_dims = x_t.shape[2:]
+        ##### 
         x_flat = x_t.reshape(B, C, n_tokens).transpose(-1, -2)
         x_norm = self.norm(x_flat)
         x_mamba = self.mamba(x_norm)
         out = x_mamba.transpose(-1, -2).reshape(B, C, *img_dims)
         #####
-        out = self.reconstruction_layer(out)
-        out = out + x
         
+        out = WaveletLayer.inverse(out)
+
         return out
 
 
@@ -136,9 +115,9 @@ class BasicResBlock(nn.Module):
         y = self.conv1(x)
         y = self.act1(self.norm1(y))  
         y = self.norm2(self.conv2(y))
-        # if self.conv3:
-        #     x = self.conv3(x)
-        # y += x
+        if self.conv3:
+            x = self.conv3(x)
+        y += x
         return self.act2(y)
     
 class UNetResEncoder(nn.Module):
