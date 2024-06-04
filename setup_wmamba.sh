@@ -27,3 +27,5 @@ do
     echo "  $file_name"
     cp $i ./U-Mamba/umamba/nnunetv2/
 done
+
+cp ./W-Mamba/UMamba_encNoAMP/predict_from_raw_data.py ./U-Mamba/umamba/nnunetv2/inference\
