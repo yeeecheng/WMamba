@@ -556,7 +556,7 @@ class nnUNetPredictor(object):
         n_predictions = torch.zeros(data.shape[1:], dtype=torch.half, device=results_device)
         if self.use_gaussian:
             gaussian = compute_gaussian(tuple(self.configuration_manager.patch_size), sigma_scale=1. / 8,
-                                        value_scaling_factor=10,
+                                        value_scaling_factor=5,
                                         dtype=torch.float32,
                                         device=results_device)
 
