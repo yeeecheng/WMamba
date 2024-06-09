@@ -136,9 +136,9 @@ class BasicResBlock(nn.Module):
         y = self.conv1(x)
         y = self.act1(self.norm1(y))  
         y = self.norm2(self.conv2(y))
-        # if self.conv3:
-        #     x = self.conv3(x)
-        # y += x
+        if self.conv3:
+            x = self.conv3(x)
+        y += x
         return self.act2(y)
     
 class UNetResEncoder(nn.Module):
@@ -182,8 +182,7 @@ class UNetResEncoder(nn.Module):
 
         self.conv_pad_sizes = []
         for krnl in kernel_sizes:
-            self.conv_pad_sizes.append(1)
-
+            self.conv_pad_sizes.append([i // 2 for i in krnl])
 
         stem_channels = features_per_stage[0]
 

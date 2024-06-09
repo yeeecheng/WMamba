@@ -27,3 +27,5 @@ do
     echo "  $file_name"
     cp $i ./U-Mamba/umamba/nnunetv2/
 done
+
+cp evaluate_predictions.py ./U-Mamba/umamba/nnunetv2/evaluation/
