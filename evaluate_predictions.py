@@ -130,8 +130,11 @@ def compute_metrics_on_folder(folder_ref: str, folder_pred: str, output_file: st
     """
     output_file must end with .json; can be None
     """
+    print(folder_ref)
     print(os.path.exists(folder_ref))
+    print(folder_pred)
     print(os.path.exists(folder_pred))
+    print(output_file)
     print(os.path.exists(output_file))
     if output_file is not None:
         assert output_file.endswith('.json'), 'output_file should end with .json'
