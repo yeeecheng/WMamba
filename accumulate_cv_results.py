@@ -31,10 +31,14 @@ def accumulate_cv_results(trained_model_folder,
 
     did_we_copy_something = False
     for f in folds:
+        print(f"fold {f}")
         expected_validation_folder = join(trained_model_folder, f'fold_{f}', 'validation')
+        print(expected_validation_folder)
         if not isdir(expected_validation_folder):
             raise RuntimeError(f"fold {f} of model {trained_model_folder} is missing. Please train it!")
         predicted_files = subfiles(expected_validation_folder, suffix=dataset_json['file_ending'], join=False)
+        print(predicted_files)
+        print("/////")
         for pf in predicted_files:
             print(join(merged_output_folder, pf))
             print(overwrite, isfile(join(merged_output_folder, pf)))
