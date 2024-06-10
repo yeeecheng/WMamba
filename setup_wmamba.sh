@@ -30,3 +30,4 @@ done
 
 cp evaluate_predictions.py ./U-Mamba/umamba/nnunetv2/evaluation/
 cp find_best_configuration.py ./U-Mamba/umamba/nnunetv2/evaluation/
+cp accumulate_cv_results.py ./U-Mamba/umamba/nnunetv2/evaluation/
