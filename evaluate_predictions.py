@@ -130,6 +130,9 @@ def compute_metrics_on_folder(folder_ref: str, folder_pred: str, output_file: st
     """
     output_file must end with .json; can be None
     """
+    print(os.path.exists(folder_ref))
+    print(os.path.exists(folder_pred))
+    print(os.path.exists(output_file))
     if output_file is not None:
         assert output_file.endswith('.json'), 'output_file should end with .json'
     files_pred = subfiles(folder_pred, suffix=file_ending, join=False)
@@ -137,9 +140,10 @@ def compute_metrics_on_folder(folder_ref: str, folder_pred: str, output_file: st
     if not chill:
         present = [isfile(join(folder_pred, i)) for i in files_ref]
         assert all(present), "Not all files in folder_pred exist in folder_ref"
+    print(files_pred)
     files_ref = [join(folder_ref, i) for i in files_pred]
     files_pred = [join(folder_pred, i) for i in files_pred]
-    print(len(files_ref))
+    print(files_ref)
     print("/////")
     with multiprocessing.get_context("spawn").Pool(num_processes) as pool:
         # for i in list(zip(files_ref, files_pred, [image_reader_writer] * len(files_pred), [regions_or_labels] * len(files_pred), [ignore_label] * len(files_pred))):
@@ -151,7 +155,7 @@ def compute_metrics_on_folder(folder_ref: str, folder_pred: str, output_file: st
         )
 
     # mean metric per class
-    print(len(results))
+    print(results)
     print("/////")
     print(regions_or_labels[0])
     print("/////")
