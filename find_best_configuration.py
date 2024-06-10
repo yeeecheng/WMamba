@@ -124,7 +124,7 @@ def find_best_configuration(dataset_name_or_id,
                 dataset_json = load_json(join(output_folder_1, 'dataset.json'))
                 label_manager = plans_manager.get_label_manager(dataset_json)
                 rw = plans_manager.image_reader_writer_class()
-
+                print("//////////////////")
                 compute_metrics_on_folder(join(nnUNet_preprocessed, dataset_name, 'gt_segmentations'),
                                           output_folder_ensemble,
                                           join(output_folder_ensemble, 'summary.json'),
